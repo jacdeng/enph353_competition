@@ -46,3 +46,4 @@ The available options are:
 | -p     | spawn pedestrian |
 | -g     | generate new license plates |
 | -l     | display QR code labels |
+# enph353_competition
