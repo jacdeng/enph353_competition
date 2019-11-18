@@ -19,13 +19,14 @@ class LineFollower:
         self.slice_num = 30
         self.frame = Image()
         self.bridge = CvBridge()
-
-        self.num_of_crossings_got = 0
+        
         self.watchout_for_crossing = True
         self.frame_count = 0
         self.scanning = False
         self.previous_crit = 0
-        self.gogogo = 0
+        self.gogogo = 0 
+        self.waitwaitwait = 0
+        self.first_approach = True
 
         time.sleep(5)
 
@@ -119,28 +120,41 @@ class LineFollower:
 
         elif not self.scanning:
             self.frame_count = self.frame_count+1
-            if(self.frame_count == 40):
+            if(self.frame_count == 50):
                 self.frame_count = 0
                 self.watchout_for_crossing = True
         
         if(self.scanning):
             run = False
-            time.sleep(0.1)
             crit = self.find_criteria(h,w)
             print("------") 
             print(self.previous_crit)
             print(crit)
             print(int(self.previous_crit) - int(crit))
-            if abs(int(self.previous_crit) - int(crit)) < 10000:
-                print("clear")
-                self.gogogo = self.gogogo + 1
-                if(self.gogogo > 8):
-                    self.scanning = False
-                    run = True
+
+            if int(self.previous_crit) - int(crit) > -600000:
+                time.sleep(0.1)
+
+                if abs(int(self.previous_crit) - int(crit)) > 10000 and (self.first_approach):
+                    self.waitwaitwait = self.waitwaitwait + 1
+                    if(self.waitwaitwait > 5):
+                        print("guy started crossing, first_approach=false")
+                        self.first_approach = False
+                        self.waitwaitwait = 0
+                else:
+                    self.waitwaitwait = 0
+
+                if abs(int(self.previous_crit) - int(crit)) < 10000 and not (self.first_approach):
+                    print("clear")
+                    self.gogogo = self.gogogo + 1
+                    if(self.gogogo > 2):
+                        self.scanning = False
+                        run = True
+                        self.first_approach = True
+                        self.gogogo = 0
+                else:
                     self.gogogo = 0
-            else:
-                self.gogogo = 0
-            
+                
             self.previous_crit = crit
             
 
@@ -166,7 +180,7 @@ class LineFollower:
 
         #print(state_num)
         cv2.imshow("debug", self.frame)
-        cv2.waitKey(14)
+        cv2.waitKey(10)
 
         if (run):
             self.follow(state_num)
