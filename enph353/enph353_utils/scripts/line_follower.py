@@ -33,11 +33,11 @@ class LineFollower:
     def initial_move(self):
         print("first moves")
         self.move("L")
-        time.sleep(0.2)
+        time.sleep(0.2*1.2)
         self.move("F")
-        time.sleep(0.6)
+        time.sleep(0.6*1.2)
         self.move("L_slow")
-        time.sleep(0.5)
+        time.sleep(0.5*1.2)
         self.move("stop")
         print("initial moves complete")
 
@@ -178,9 +178,9 @@ class LineFollower:
                     state[i] = 1
                     state_num = i
 
-        #print(state_num)
-        cv2.imshow("debug", self.frame)
-        cv2.waitKey(10)
+        # print(state_num)
+        # cv2.imshow("debug", self.frame)
+        # cv2.waitKey(10)
 
         if (run):
             self.follow(state_num)
@@ -213,9 +213,9 @@ class LineFollower:
         return np.sum(check)
 
     def follow(self, state):
-        if state < 21:
+        if state < 20:
             self.move("L")
-        elif state > 27:
+        elif state > 28:
             self.move("R")
         else:
             self.move("F")
