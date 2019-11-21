@@ -94,11 +94,11 @@ class DetectPlate:
                     print("ye")
                     cv.imshow('plate_number', license_plate)
                     cv.waitKey(2)
-                    cv.imwrite('/home/fizzer/353_pics/license/pictures' + str(random.randint(0,999)) + '.png', license_plate)
+                    cv.imwrite('./new_plates/' + str(random.randint(0,999)) + '.png', license_plate)
                 
                     cv.imshow('spot number', spot_num)
                     cv.waitKey(2)
-                    cv.imwrite('/home/fizzer/353_pics/spot_num/pictures' + str(random.randint(0,999)) + '.png', spot_num)
+                    cv.imwrite('./new_location/' + str(random.randint(0,999)) + '.png', spot_num)
 
                 #save license plate
 

@@ -183,12 +183,9 @@ class ReadLocation:
     result = []
 
     for i in range(prediction.size):
-      #print(i)
-      if prediction[i] > 6:
-        print("prediction is probably wrong")
-        return
+      print('P' + str(prediction[i]))
 
-    print(prediction)
+    #print(prediction)
     #print(uncertainty)
 
 

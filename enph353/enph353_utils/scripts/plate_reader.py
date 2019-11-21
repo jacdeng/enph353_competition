@@ -203,24 +203,20 @@ class ReadPlate:
     
     prediction = model.predict_classes(X)
 
-    print(prediction)
-
     #f = backend.function([model.layers[0].input, backend.learning_phase()], [model.layers[-1].output])
     
     #_,uncertainty = self.predict_with_uncertainty(f, X)
     
-    result = []
+    # list of list of 4s
+    got_data = self.split(prediction)
 
-    for i in range(prediction.size):
-      #print(i)
-      if prediction[i] > 9 and i < 2:
-        result.append(self.num_to_char(prediction[i]))
-      elif prediction[i] < 9 and i > 1:
-        result.append(prediction[i])
-      else:
-        print("prediction is probably wrong")
+    overall_result = []
+    for four_list in got_data:
+      res = self.convert_to_char(four_list)
+      #print(res)
+      overall_result.append(res)
 
-    print(result)
+    #print(overall_result)
     #print(uncertainty)
 
   def run_location_prediction(self, path):
@@ -231,7 +227,39 @@ class ReadPlate:
     for i in range(num_images):
       filename_i = image_array[i]
       self.crop_location(Image.open("{}{}".format(path + "/",filename_i)),"{}".format(filename_i), num_array)
+  
+  def convert_to_char(self, four_list):
+    ret = []
+    pre = True
+
+    for i in range(len(four_list)):
+      if four_list[i] > 9 and i < 2:
+        ret.append(self.num_to_char(four_list[i]))
+      elif four_list[i] < 9 and i > 1:
+        ret.append(four_list[i])
+      else:
+        pre = False
+        ret.append(four_list[i])
     
+    if pre is False:
+      print("prediction is probably wrong on:")
+    print(str(ret) + '\n')
+    return ret
+
+  def split(self, list_l):
+    ret = []
+    plate = []
+    c = 0
+    for elem in list_l:
+      if c == 4:
+        ret.append(plate)
+        plate = []
+        c = 0
+
+      plate.append(elem)
+      c = c+1
+
+    return ret
 
   def crop_location(self, img, filename, num_array):
     SIZE = 256, 128
