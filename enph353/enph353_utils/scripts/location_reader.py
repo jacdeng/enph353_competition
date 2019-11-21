@@ -22,9 +22,8 @@ import random
 
 
 #file path
-NEW_PATH = "/home/fizzer/353_ws/src/enph353_competition/enph353/enph353_utils/scripts/new_location/"
+NEW_PATH = "./new_location/"
 LOAD_FILE = 'Location_Reader2.h5' #trained model to load
-
 
 #constants for training cnn
 PATH = "/home/fizzer/enph353_cnn_lab/location_data/"
@@ -40,8 +39,6 @@ class ReadLocation:
 
   def __init__(self):
     self.conv_model = models.Sequential()
-
-
 
   # crop plates into 4 parts containing the individual characters
   def crop_and_label(self, img, filename, character_array):

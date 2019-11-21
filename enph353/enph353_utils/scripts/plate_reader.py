@@ -22,7 +22,7 @@ import random
 
 
 #file path
-NEW_PLATE_PATH = "/home/fizzer/353_ws/src/enph353_competition/enph353/enph353_utils/scripts/new_plates/"
+NEW_PLATE_PATH = "./new_plates/"
 LOAD_FILE = 'Plate_Reader5.h5' #trained model to load
 
 
