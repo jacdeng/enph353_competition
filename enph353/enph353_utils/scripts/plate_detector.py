@@ -89,14 +89,16 @@ class DetectPlate:
                 spot_num = cv_image[y+y_QR:y+h, x:x+w]
 
                 if self.is_valid_plate(license_plate) and self.is_valid_spot(spot_num):
+                    
+                    # uncomment cv.imwrite to save the read files to folder
 
                     cv.imshow('plate_number', license_plate)
                     cv.waitKey(2)
-                    cv.imwrite('./new_plates/' + str(random.randint(0,999)) + '.png', license_plate)
+                    #cv.imwrite('./new_plates/' + str(random.randint(0,999)) + '.png', license_plate)
                 
                     cv.imshow('spot number', spot_num)
                     cv.waitKey(2)
-                    cv.imwrite('./new_location/' + str(random.randint(0,999)) + '.png', spot_num)
+                    #cv.imwrite('./new_location/' + str(random.randint(0,999)) + '.png', spot_num)
 
                 #save license plate
 
