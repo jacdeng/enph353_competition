@@ -88,10 +88,8 @@ class DetectPlate:
                 #cv.rectangle(cv_image, (x,y+y_QR), (x+w,y+h), (255,0,0))
                 spot_num = cv_image[y+y_QR:y+h, x:x+w]
 
-                print("checking if valid")
                 if self.is_valid_plate(license_plate) and self.is_valid_spot(spot_num):
 
-                    print("ye")
                     cv.imshow('plate_number', license_plate)
                     cv.waitKey(2)
                     cv.imwrite('./new_plates/' + str(random.randint(0,999)) + '.png', license_plate)
@@ -108,7 +106,6 @@ class DetectPlate:
 
     def is_valid_plate(self, license_plate):
         ar = license_plate.shape[0]/license_plate.shape[1]
-        print(ar)
         gray = cv.cvtColor(license_plate, cv.COLOR_BGR2GRAY)
         bw = cv.threshold(gray, 225, 255, cv.THRESH_BINARY)[1]
         if np.sum(bw) > 0 and ar<0.2:
@@ -118,7 +115,6 @@ class DetectPlate:
     
     def is_valid_spot(self, spot_num):
         ar = spot_num.shape[0]/spot_num.shape[1]
-        print(ar)
         gray = cv.cvtColor(spot_num, cv.COLOR_BGR2GRAY)
         bw = cv.threshold(gray, 225, 255, cv.THRESH_BINARY)[1]
         if np.sum(bw) > 0 and ar<0.5:
