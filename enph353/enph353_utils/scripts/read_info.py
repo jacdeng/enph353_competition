@@ -53,7 +53,7 @@ class ReadInfo:
         if pre != True:
             print("prediction is probably wrong")
 
-        print(result)
+        return str(result)
 
     # predict location number
     def run_location_prediction(self, cv_image):
@@ -64,7 +64,7 @@ class ReadInfo:
         
         prediction = model.predict_classes(X)
         
-        print('P' + str(prediction))
+        return ('P' + str(prediction))
 
 
     # crops plate number 4 individual characters and converts it to an array
@@ -136,10 +136,12 @@ def main():
 
   #predict new location
   location = cv.imread('/home/fizzer/enph353_cnn_lab/new_locations/pictures662.png')
-  read_info.run_location_prediction(location)
+  location_result = read_info.run_location_prediction(location)
+  print(location_result)
 
   plate = cv.imread('/home/fizzer/enph353_cnn_lab/new_data/aZF86.png')
-  read_info.run_plate_prediction(plate)
+  plate_result = read_info.run_plate_prediction(plate)
+  print(plate_result)
 
 
 
