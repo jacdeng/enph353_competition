@@ -33,11 +33,11 @@ class LineFollower:
     def initial_move(self):
         print("first moves")
         self.move("L")
-        time.sleep(0.2*1.2)
+        time.sleep(0.2)
         self.move("F")
-        time.sleep(0.6*1.2)
+        time.sleep(0.6)
         self.move("L_slow")
-        time.sleep(0.5*1.2)
+        time.sleep(0.5)
         self.move("stop")
         print("initial moves complete")
 
@@ -116,7 +116,7 @@ class LineFollower:
                 self.watchout_for_crossing = False
                 self.scanning = True
                 run = False
-                self.move_set("crawl forward")
+                self.move("stop")
 
         elif not self.scanning:
             self.frame_count = self.frame_count+1

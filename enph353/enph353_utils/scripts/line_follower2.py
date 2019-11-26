@@ -7,6 +7,7 @@ import time
 import sys
 import cv2
 import numpy as np
+import plate_detector2
 
 class LineFollower:
 
@@ -17,8 +18,10 @@ class LineFollower:
         self.data = None
         self.frame = Image()
         self.bridge = CvBridge()
+        self.plate_detector = plate_detector2.DetectPlate()
 
         # time factor compensator, default 1 at realtimefactor = 1.6
+        # no longer using this anymore so setting it to 0, use rospy.sleep instead
         self.factor = 0
 
         # frame counters
@@ -42,8 +45,6 @@ class LineFollower:
         self.go_counter = 0 
         self.wait_counter = 0
         self.first_approach = True
-
-        time.sleep(5)
 
     def move(self, action):
         vel_cmd = Twist()
@@ -71,6 +72,9 @@ class LineFollower:
         except CvBridgeError as e:
             print(e)
 
+        # refer to plate_detector2. check frame for potential license plates
+        plates_found = self.plate_detector.check_frame(self.frame)
+
         # converting image into black and white from gray
         gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
         bw = cv2.threshold(gray, 225, 255, cv2.THRESH_BINARY)[1]
@@ -96,7 +100,6 @@ class LineFollower:
                 self.move("stop")
                 self.left_turning = False
                 self.running = True
-
 
         # Line following state (running state) --->
         if(self.running) and not (self.starting) and not (self.scanning) and not (self.left_turning):
@@ -156,9 +159,10 @@ class LineFollower:
                     print("clear")
                     self.go_counter = self.go_counter + 1
                     if(self.go_counter > 3):
-                        print("gogogo")
+                        print("===================")
                         self.first_approach = True
                         self.go_counter = 0
+                        print("--- SCAN COMPLETE ---")
 
                         self.running = True
                         self.scanning = False

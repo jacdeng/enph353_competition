@@ -5,29 +5,26 @@ import sys
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 import random
+import location_reader
+import plate_reader
+from std_msgs.msg import String
 
-TOP_TO_EXCLUDE = 0.16
+# INTERFACE FOR PLATE_DETECTOR1 AND THE CNN FOR LINE_FOLLOWER2.PY
+# refactored to work as subsidiary to line_follower2.py
+# also does the publishing to rosnode, interacts with location_reader and plate_reader.
+
+TOP_TO_EXCLUDE = 0.15
 BOT_TO_INCLUDE = 0.09
 
 class DetectPlate:
 
     def __init__(self):
-        self.image_sub = rospy.Subscriber('R1/pi_camera/image_raw', Image, self.callback)
-        self.CvBridge = CvBridge()
-
-
-    def callback(self,data):
-        try:
-            #convert ROS image to cv image
-            cv_image = self.CvBridge.imgmsg_to_cv2(data, "bgr8")
-        except CvBridgeError as e:
-            print(e)
-
-        #blue = self.get_that_blue(cv_image)
-
-        plate = self.get_contour(cv_image)
+        self.info_pub = rospy.Publisher('/license_plate', String, queue_size=1)
+        self.spot_num = None
+        self.license_plate = None
 
     # find the very specific blue color
+    # not using this anymore
     def get_that_blue(self, frame):
         hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
@@ -43,18 +40,17 @@ class DetectPlate:
         res = cv.bitwise_and(frame,frame, mask= mask)
         return res
 
+    # finds the plate and spot num from the given frame
+    # returns true if found a plate and spotnum, else returns false
+    def check_frame(self, frame):
+        flag = False
+        res, mask = self.mask_image(frame)
 
-    # finds contours
-    def get_contour(self, cv_image):
-        res, mask = self.mask_image(cv_image)
-        
-        gray = cv.cvtColor(cv_image, cv.COLOR_BGR2GRAY)
+        gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         bw = cv.threshold(gray, 225, 255, cv.THRESH_BINARY)[1]
-
-        plate_center = []
         
-        #dim_width = cv_image.shape[1]
-        #dim_height = cv_image.shape[0]
+        #dim_width = frame.shape[1]
+        #dim_height = frame.shape[0]
 
         #get contours of the masked image
         image , contours, hierarchy = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE) 
@@ -63,47 +59,47 @@ class DetectPlate:
 
             #find contour with the biggest area
             max_center = max(contours, key=cv.contourArea)
-            #cv_image = cv.circle(cv_image, (int(max_center[0][0][0]),int(max_center[0][0][1])), 5, (0, 0, 255) , -1)
-            cv.drawContours(cv_image, max_center, -1, (0,255,0), 2)
+            #frame = cv.circle(frame, (int(max_center[0][0][0]),int(max_center[0][0][1])), 5, (0, 0, 255) , -1)
+            cv.drawContours(frame, max_center, -1, (0,255,0), 2)
 
             x, y, w, h = cv.boundingRect(max_center)
-            #cv.circle(cv_image, (int(x),int(y)), 5, (0,0,255),1)
+            #cv.circle(frame, (int(x),int(y)), 5, (0,0,255),1)
 
             #if contours fit correct dimensions, draw contour
-            if self.contour_fit(max_center, cv_image):
+            if self.contour_fit(max_center, frame):
                 x, y, w, h = cv.boundingRect(max_center)
-                plate_center.append(max_center)
 
-                # cv.drawContours(cv_image, plate_center, -1, (0,255,0), 1)
+                # cv.drawContours(frame, plate_center, -1, (0,255,0), 1)
 
                 y_license_plate = int(BOT_TO_INCLUDE*y)
                 y_QR = int(TOP_TO_EXCLUDE*y)
 
                 # license plate
-                #cv.rectangle(cv_image, (x,y+h), (x+w,y+h+y_license_plate), (0,0,255))
-                license_plate = cv_image[y+h:y+h+y_license_plate, x:x+w]
+                #cv.rectangle(frame, (x,y+h), (x+w,y+h+y_license_plate), (0,0,255))
+                license_plate = frame[y+h:y+h+y_license_plate, x:x+w]
                 
                 # spot num
-                #cv.rectangle(cv_image, (x,y+y_QR), (x+w,y+h), (255,0,0))
-                spot_num = cv_image[y+y_QR:y+h, x:x+w]
+                #cv.rectangle(frame, (x,y+y_QR), (x+w,y+h), (255,0,0))
+                spot_num = frame[y+y_QR:y+h, x:x+w]
 
                 if self.is_valid_plate(license_plate) and self.is_valid_spot(spot_num):
                     
+                    flag = True
                     # uncomment cv.imwrite to save the read files to folder
 
                     cv.imshow('plate_number', license_plate)
                     cv.waitKey(2)
                     #cv.imwrite('./new_plates/' + str(random.randint(0,999)) + '.png', license_plate)
+                    self.license_plate = license_plate
                 
                     cv.imshow('spot number', spot_num)
                     cv.waitKey(2)
                     #cv.imwrite('./new_location/' + str(random.randint(0,999)) + '.png', spot_num)
+                    self.spot_num = spot_num
 
                 #save license plate
-
-        cv.imshow('frame', cv_image)
-        cv.waitKey(3) 
-        return plate_center
+        
+        return flag
 
     def is_valid_plate(self, license_plate):
         ar = license_plate.shape[0]/license_plate.shape[1]
@@ -147,7 +143,6 @@ class DetectPlate:
         res = cv.bitwise_and(cv_image,cv_image, mask= mask)
 
         return res, mask
-
 
     # checks if contours are within required dimensions
     def contour_fit(self, center, img):

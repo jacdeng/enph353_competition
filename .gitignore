@@ -4,3 +4,5 @@ enph353/enph353_gazebo/nodes/*.csv
 enph353/enph353_gazebo/scripts/QRCode_*.png
 enph353/enph353_gazebo/scripts/plates.csv
 enph353/enph353_utils/scripts/*.txt
+enph353/enph353_utils/scripts/new_location/*
+enph353/enph353_utils/scripts/new_plates/*
