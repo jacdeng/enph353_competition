@@ -53,7 +53,7 @@ class ReadInfo:
         if pre != True:
             print("prediction is probably wrong")
 
-        return str(result)
+        return pre,str(result)
 
     # predict location number
     def run_location_prediction(self, cv_image):
