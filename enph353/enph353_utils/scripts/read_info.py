@@ -104,8 +104,8 @@ class ReadInfo:
 
         resized = cv.resize(cv_image, PLATE_SIZE, interpolation = cv.INTER_AREA)
 
-        # cv.imshow('resized', resized)
-        # cv.waitKey(0)
+        cv.imshow('resized', resized)
+        cv.waitKey(0)
         
         for i in range (4):
             if i == 2: 
@@ -119,14 +119,14 @@ class ReadInfo:
 
             img = np.array(img)
 
-            # cv.imshow('cropped', img)
-            # cv.waitKey(0)
+            cv.imshow('cropped', img)
+            cv.waitKey(0)
 
             if i == 0:
                 let1_data.append(img)
-            elif i == 2:
+            elif i == 1:
                 let2_data.append(img)
-            elif i == 3:
+            elif i == 2:
                 num1_data.append(img)
             else:
                 num2_data.append(img)
@@ -146,10 +146,10 @@ class ReadInfo:
 
         X.append(img)
 
-        # cv.imshow('resized', resized)
-        # cv.waitKey(0)
-        # cv.imshow('cropped', crop)
-        # cv.waitKey(0)
+        cv.imshow('resized', resized)
+        cv.waitKey(0)
+        cv.imshow('cropped', crop)
+        cv.waitKey(0)
 
         return X
 
@@ -169,14 +169,14 @@ def main():
     read_info = ReadInfo()
 
     # predict new location
-    location = cv.imread('/home/fizzer/enph353_cnn_lab/testdata/pictures880.png')
-    pre,location_result = read_info.run_location_prediction(location)
-    print('prediction: P' + location_result)
-    print('prediction is probably ' + str(pre))
+    #location = cv.imread('/home/fizzer/enph353_cnn_lab/testdata/pictures913.png')
+    #pre,location_result = read_info.run_location_prediction(location)
+    #print('prediction: P' + location_result)
+    #print('prediction is probably ' + str(pre))
 
 
     # predict new license plate
-    plate = cv.imread('/home/fizzer/enph353_cnn_lab/testdata/pictures583.png')
+    plate = cv.imread('/home/fizzer/enph353_cnn_lab/testdata/pictures285.png')
     pre,plate_result = read_info.run_plate_prediction(plate)
     print('prediction: ' + plate_result)
     print('prediction is probably ' + str(pre))
