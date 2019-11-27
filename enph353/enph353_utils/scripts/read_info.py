@@ -31,12 +31,19 @@ class ReadInfo:
 
     # predict license plate
     def run_plate_prediction(self, cv_image):
+
+        print("trying to load cnn")
+
         model = models.load_model(PLATE_LOAD_FILE)
+
+        print("loaded cnn")
 
         X = self.crop_plate(cv_image)
         X = np.array(X)/255.0
         
         prediction = model.predict_classes(X)
+
+        print("predicted")
         result = []
         pre = True
 
@@ -64,7 +71,7 @@ class ReadInfo:
         
         prediction = model.predict_classes(X)
         
-        return ('P' + str(prediction))
+        return (str(prediction))
 
 
     # crops plate number 4 individual characters and converts it to an array
@@ -78,8 +85,8 @@ class ReadInfo:
 
         resized = cv.resize(cv_image, PLATE_SIZE, interpolation = cv.INTER_AREA)
 
-        cv.imshow('resized', resized)
-        cv.waitKey(0)
+        # cv.imshow('resized', resized)
+        # cv.waitKey(0)
         
         for i in range (4):
             if i == 2: 
@@ -94,8 +101,8 @@ class ReadInfo:
             img = np.array(img)
             X.append(img)
 
-            cv.imshow('cropped', img)
-            cv.waitKey(0)
+            #cv.imshow('cropped', img)
+            #cv.waitKey(0)
 
         return X
 
@@ -112,10 +119,10 @@ class ReadInfo:
 
         X.append(img)
 
-        cv.imshow('resized', resized)
-        cv.waitKey(0)
-        cv.imshow('cropped', crop)
-        cv.waitKey(0)
+        # cv.imshow('resized', resized)
+        # cv.waitKey(0)
+        # cv.imshow('cropped', crop)
+        # cv.waitKey(0)
 
         return X
 
@@ -131,19 +138,19 @@ class ReadInfo:
 
 
 
-def main():
-  read_info = ReadInfo()
+# def main():
+#   read_info = ReadInfo()
 
-  #predict new location
-  location = cv.imread('/home/fizzer/enph353_cnn_lab/new_locations/pictures662.png')
-  location_result = read_info.run_location_prediction(location)
-  print(location_result)
+#   #predict new location
+#   location = cv.imread('/home/fizzer/enph353_cnn_lab/new_locations/pictures662.png')
+#   location_result = read_info.run_location_prediction(location)
+#   print(location_result)
 
-  plate = cv.imread('/home/fizzer/enph353_cnn_lab/new_data/aZF86.png')
-  plate_result = read_info.run_plate_prediction(plate)
-  print(plate_result)
+#   plate = cv.imread('/home/fizzer/enph353_cnn_lab/new_data/aZF86.png')
+#   plate_result = read_info.run_plate_prediction(plate)
+#   print(plate_result)
 
 
 
-if __name__ == "__main__":    
-    main() 
+# if __name__ == "__main__":    
+#     main() 

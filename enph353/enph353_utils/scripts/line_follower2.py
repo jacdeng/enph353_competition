@@ -26,7 +26,7 @@ class LineFollower:
 
         # frame counters
         self.frame_count_running = 0
-        self.frame_count2 = 0
+        self.frame_count_checker = 0
 
         # starting state
         self.starting = True
@@ -45,6 +45,16 @@ class LineFollower:
         self.go_counter = 0 
         self.wait_counter = 0
         self.first_approach = True
+
+    def move_set(self, action):
+        if action == "crawl forward cnn":
+            self.move("F")
+            rospy.sleep(0.7)
+            self.move("stop")
+        if action == "crawl forward crosswalk":
+            self.move("F")
+            rospy.sleep(0.1)
+            self.move("stop")
 
     def move(self, action):
         vel_cmd = Twist()
@@ -72,8 +82,16 @@ class LineFollower:
         except CvBridgeError as e:
             print(e)
 
+        plates_found = False
         # refer to plate_detector2. check frame for potential license plates
-        plates_found = self.plate_detector.check_frame(self.frame)
+        if self.frame_count_checker > 4:
+            plates_found = self.plate_detector.check_frame(self.frame)
+            self.frame_count_checker = 0
+            if plates_found:
+                self.move_set("crawl forward cnn")
+                spot_str, license_str = self.plate_detector.get_info()
+                # self.plate_detector.publish()
+        self.frame_count_checker = self.frame_count_checker+1
 
         # converting image into black and white from gray
         gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
@@ -123,8 +141,7 @@ class LineFollower:
                 if self.has_red_line(h,w):
                     self.running = False
                     self.scanning = True
-                    time.sleep(0.2*self.factor)
-                    self.move("stop")
+                    self.move_set("crawl forward crosswalk")
         
         # Scannning state (looking for pedestrians) --->
         if (self.scanning) and not (self.starting) and not (self.running) and not (self.left_turning):
@@ -138,7 +155,7 @@ class LineFollower:
             print(crit)
             print(diff)
 
-            if abs(diff) < 600000  :
+            if abs(diff) < 550000  :
 
                 # wait till a huge change happens then start checking for clears so our car can go
                 if abs(diff) > 10000 and (self.first_approach):
@@ -170,7 +187,8 @@ class LineFollower:
                     self.go_counter = 0
             
             self.previous_crit = crit
-            
+        
+        self.plate_detector.reset_spot_and_license()
         # cv2.imshow("debug", bw)
         # cv2.waitKey(10)
 
