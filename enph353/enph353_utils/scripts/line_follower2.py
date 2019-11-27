@@ -89,7 +89,7 @@ class LineFollower:
             self.frame_count_checker = 0
             if plates_found:
                 self.move_set("crawl forward cnn")
-                spot_str, license_str = self.plate_detector.get_info()
+                # spot_str, license_str = self.plate_detector.get_info()
                 # self.plate_detector.publish()
         self.frame_count_checker = self.frame_count_checker+1
 
