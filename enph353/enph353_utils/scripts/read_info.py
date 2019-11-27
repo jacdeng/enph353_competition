@@ -21,9 +21,9 @@ from keras import backend
 import random
 
 # define constants
-PLATE_NUM_LOAD_FILE = 'Plate_num.h5'
-PLATE_LET_LOAD_FILE = 'Plate_let.h5'
-LOCATION_NUM_LOAD_FILE = 'Location_num.h5'
+PLATE_NUM_LOAD_FILE = 'Plate_num3.h5'
+PLATE_LET_LOAD_FILE = 'Plate_let3.h5'
+LOCATION_NUM_LOAD_FILE = 'Location_num2.h5'
 
 CONFIDENCE_THRESHOLD = 73  # percent confidence
 
