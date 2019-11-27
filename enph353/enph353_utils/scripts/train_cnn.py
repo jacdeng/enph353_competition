@@ -18,22 +18,24 @@ from keras import optimizers
 from keras.utils import plot_model
 from keras import backend
 
-import random
+from random import randint
 
 # define constants
 
 PLATE_DATA = "/home/fizzer/enph353_cnn_lab/pictures/"
 LOCATION_DATA = "/home/fizzer/enph353_cnn_lab/location_data/"
 
-PLATE_SAVE_FILE = 'Plate_Reader3.h5'
-LOCATION_SAVE_FILE = 'Location_Reader3.h5'
+PLATE_NUM_SAVE_FILE = 'Plate_num.h5'
+PLATE_LET_SAVE_FILE = 'Plate_let.h5'
+LOCATION_NUM_SAVE_FILE = 'Location_num.h5'
 
 VALIDATION_SPLIT = 0.2
 LEARNING_RATE = 1e-4 
-EPOCH = 30  #number of times data set is passed through the cnn
-BATCH_SIZE = 64  #number of training examples
-PLATE_CLASSES = 36 # 0 to 9 and A to Z
-LOCATION_CLASSES = 6 # 0 to 5
+EPOCH = 100  #number of times data set is passed through the cnn
+BATCH_SIZE = 16  #number of training examples
+PLATE_LET_CLASSES = 26 # A to Z
+PLATE_NUM_CLASSES = 10 # 0 to 10
+LOCATION_NUM_CLASSES = 6 # 1 to 6
 
 class TrainCNN:
 
@@ -42,7 +44,7 @@ class TrainCNN:
         
     
     # trains the cnn
-    def train_nn(self, classes, save_file, data):
+    def train_nn(self, num_classes, save_file, data):
 
         self.conv_model.add(layers.Conv2D(32, (3, 3), activation='relu',
                                     input_shape=(128, 128, 3)))
@@ -56,7 +58,7 @@ class TrainCNN:
         self.conv_model.add(layers.Flatten())
         self.conv_model.add(layers.Dropout(0.5))
         self.conv_model.add(layers.Dense(512, activation='relu'))
-        self.conv_model.add(layers.Dense(classes, activation='softmax'))
+        self.conv_model.add(layers.Dense(num_classes, activation='softmax'))
 
         self.conv_model.summary()
 
@@ -100,7 +102,6 @@ class TrainCNN:
         return encoded,invert_dict
 
 
-
     # splits data into character image (X) and corrisponding label (Y)
     def split_data(self, data):
         X = []
@@ -131,21 +132,24 @@ class TrainCNN:
 
         images_array = self.files_in_folder(path)
         num_images = len(images_array)
-        data = []
+        num_data = []
+        let_data = []
         
         for i in range (num_images):
             cv_image = cv.imread(path + images_array[i])
             filename_i = images_array[i]
 
             if plate:
-                data = self.crop_n_label_plates(cv_image, filename_i, data)
+                self.crop_n_label_plates(cv_image, filename_i, num_data, let_data)
+
             else:
-                data = self.crop_n_label_locations(cv_image, filename_i, data)
-        return data
+                self.crop_n_label_locations(cv_image, filename_i, num_data)
+
+        return num_data, let_data
 
 
     # crop plates into 4 parts containing the individual characters and label them
-    def crop_n_label_plates(self, cv_image, filename, data):
+    def crop_n_label_plates(self, cv_image, filename, num_data, let_data):
         OFFSET = 50
         LETTER_WIDTH = 100 
         right = OFFSET
@@ -164,40 +168,58 @@ class TrainCNN:
             crop = resized[0:298, left:right]
             img = cv.resize(crop, DIM, interpolation = cv.INTER_AREA)
             
+
+            #if i < 2:
+            #    cv.imwrite('/home/fizzer/enph353_cnn_lab/PLcrop/' + str(randint(0,9999)) + '.png', img)
+            #else:
+            #    cv.imwrite('/home/fizzer/enph353_cnn_lab/PNcrop/' + str(randint(0,9999)) + '.png', img)
+
+
             img = np.array(img)
             string = filename[i+1]
             pair = (img, string)
-            data.append(pair)
+            
+            if i < 2:
+                let_data.append(pair)
+            else:
+                num_data.append(pair)
 
-        return data
+        return
 
     
     # crop locations into individual numbers and label them
-    def crop_n_label_locations(self, cv_image, filename, data):
+    def crop_n_label_locations(self, cv_image, filename, num_data):
         DIM = 256, 128
 
         resized = cv.resize(cv_image, DIM, interpolation = cv.INTER_AREA)
         crop = resized[0:128, 128:256]
 
+        #cv.imwrite('/home/fizzer/enph353_cnn_lab/LNcrop/' + str(randint(0,9999)) + '.png', crop)
+
         img = np.array(crop)
         string = filename[1]
         pair = (img, string)
-        data.append(pair)
+        num_data.append(pair)
 
-        return data
+        return
 
 
 
 def main():
     train_cnn = TrainCNN()
 
-    # train model for plate reading
-    data = train_cnn.prep_data(PLATE_DATA, plate = True)
-    train_cnn.train_nn(PLATE_CLASSES, PLATE_SAVE_FILE, data)
+    #  can only train 1 cnn at a time
 
-    # train model for location reading
-    #data = train_cnn.prep_data(LOCATION_DATA, plate = False) 
-    #train_cnn.train_nn(LOCATION_CLASSES, LOCATION_SAVE_FILE, data)
+    num_data, let_data = train_cnn.prep_data(PLATE_DATA, plate = True)
+    #  train number model for plate reading
+    #train_cnn.train_nn(PLATE_NUM_CLASSES, PLATE_NUM_SAVE_FILE, num_data)
+
+    #  train letter model for plate reading
+    #train_cnn.train_nn(PLATE_LET_CLASSES, PLATE_LET_SAVE_FILE, let_data)
+
+    #  train model for location reading
+    data,_ = train_cnn.prep_data(LOCATION_DATA, plate = False) 
+    train_cnn.train_nn(LOCATION_NUM_CLASSES, LOCATION_NUM_SAVE_FILE, data)
 
 
 

@@ -21,8 +21,9 @@ from keras import backend
 import random
 
 # define constants
-PLATE_LOAD_FILE = 'Plate_Reader2.h5'
-LOCATION_LOAD_FILE = 'Location_Reader2.h5'
+PLATE_NUM_LOAD_FILE = 'Plate_num.h5'
+PLATE_LET_LOAD_FILE = 'Plate_let.h5'
+LOCATION_NUM_LOAD_FILE = 'Location_num.h5'
 
 
 class ReadInfo:
@@ -31,49 +32,40 @@ class ReadInfo:
 
     # predict license plate
     def run_plate_prediction(self, cv_image):
+        prediction = []
+        #print("trying to load cnn")
 
-        print("trying to load cnn")
+        num_model = models.load_model(PLATE_NUM_LOAD_FILE)
+        let_model = models.load_model(PLATE_LET_LOAD_FILE)
 
-        model = models.load_model(PLATE_LOAD_FILE)
+        #print("loaded cnn")
 
-        print("loaded cnn")
-
-        X = self.crop_plate(cv_image)
-        X = np.array(X)/255.0
+        num_data, let_data = self.crop_plate(cv_image)
+        num_data = np.array(num_data)/255.0
+        let_data = np.array(let_data)/255.0
         
-        prediction = model.predict_classes(X)
+        let_prediction = let_model.predict_classes(let_data)
+        num_prediction = num_model.predict_classes(num_data)
 
-        print("predicted")
-        result = []
-        pre = True
+        for i in range(2):
+            prediction.append(self.num_to_char(let_prediction[i]))
+        for i in range(2):
+            prediction.append(num_prediction[i])
 
-        for i in range(prediction.size):
-            if prediction[i] > 9 and i < 2:
-                result.append(self.num_to_char(prediction[i]))
-            elif prediction[i] < 9 and i > 1:
-                result.append(prediction[i])
-            else:
-                if prediction[i] > 9:
-                    result.append(self.num_to_char(prediction[i]))
-                else:
-                    result.append(prediction[i])
-                pre = False
+        #print("predicted")
 
-        if pre != True:
-            print("prediction is probably wrong")
-
-        return pre,str(result)
+        return str(prediction)
 
     # predict location number
     def run_location_prediction(self, cv_image):
-        model = models.load_model(LOCATION_LOAD_FILE)
+        model = models.load_model(LOCATION_NUM_LOAD_FILE)
 
         X = self.crop_location(cv_image)
         X = np.array(X)/255.0
         
         prediction = model.predict_classes(X)
         
-        return (str(prediction))
+        return (str(prediction + 1))
 
 
     # crops plate number 4 individual characters and converts it to an array
@@ -83,12 +75,13 @@ class ReadInfo:
         right = OFFSET
         DIM = 128, 128
         PLATE_SIZE = 600, 298
-        X = []
+        num_data = []
+        let_data = []
 
         resized = cv.resize(cv_image, PLATE_SIZE, interpolation = cv.INTER_AREA)
 
-        # cv.imshow('resized', resized)
-        # cv.waitKey(0)
+        cv.imshow('resized', resized)
+        cv.waitKey(0)
         
         for i in range (4):
             if i == 2: 
@@ -101,12 +94,16 @@ class ReadInfo:
             img = cv.resize(crop, DIM, interpolation = cv.INTER_AREA)
 
             img = np.array(img)
-            X.append(img)
 
-            #cv.imshow('cropped', img)
-            #cv.waitKey(0)
+            # cv.imshow('cropped', img)
+            # cv.waitKey(0)
 
-        return X
+            if i < 2:
+                let_data.append(img)
+            else:
+                num_data.append(img)
+
+        return num_data, let_data
 
     
     # crops location into an image of the number and converts it to an array 
@@ -121,8 +118,8 @@ class ReadInfo:
 
         X.append(img)
 
-        # cv.imshow('resized', resized)
-        # cv.waitKey(0)
+        cv.imshow('resized', resized)
+        cv.waitKey(0)
         # cv.imshow('cropped', crop)
         # cv.waitKey(0)
 
@@ -132,27 +129,28 @@ class ReadInfo:
     # converts a number to its corrisponding letter
     def num_to_char(self, num):
         char = num
-        for i in range(10 , 35):
+        for i in range(26):
             if num == i:
-                char = chr(i + 55)
+                char = chr(i + 65)
 
         return char
 
 
 
-# def main():
-#   read_info = ReadInfo()
+def main():
+    read_info = ReadInfo()
 
-#   #predict new location
-#   location = cv.imread('/home/fizzer/enph353_cnn_lab/new_locations/pictures662.png')
-#   location_result = read_info.run_location_prediction(location)
-#   print(location_result)
+    # predict new location
+    location = cv.imread('/home/fizzer/enph353_cnn_lab/testdata/pictures411.png')
+    location_result = read_info.run_location_prediction(location)
+    print('prediction: P' + location_result)
 
-#   plate = cv.imread('/home/fizzer/enph353_cnn_lab/new_data/aZF86.png')
-#   plate_result = read_info.run_plate_prediction(plate)
-#   print(plate_result)
+    # predict new license plate
+    plate = cv.imread('/home/fizzer/enph353_cnn_lab/testdata/pictures362.png')
+    plate_result = read_info.run_plate_prediction(plate)
+    print('prediction: ' + plate_result)
 
 
 
-# if __name__ == "__main__":    
-#     main() 
+if __name__ == "__main__":    
+        main() 
