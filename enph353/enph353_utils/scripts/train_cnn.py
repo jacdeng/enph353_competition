@@ -25,13 +25,13 @@ import random
 PLATE_DATA = "/home/fizzer/enph353_cnn_lab/pictures/"
 LOCATION_DATA = "/home/fizzer/enph353_cnn_lab/location_data/"
 
-PLATE_SAVE_FILE = 'Plate_Reader.h5'
-LOCATION_SAVE_FILE = 'Location_Reader.h5'
+PLATE_SAVE_FILE = 'Plate_Reader3.h5'
+LOCATION_SAVE_FILE = 'Location_Reader3.h5'
 
 VALIDATION_SPLIT = 0.2
 LEARNING_RATE = 1e-4 
-EPOCH = 100  #number of times data set is passed through the cnn
-BATCH_SIZE = 16  #number of training examples
+EPOCH = 30  #number of times data set is passed through the cnn
+BATCH_SIZE = 64  #number of training examples
 PLATE_CLASSES = 36 # 0 to 9 and A to Z
 LOCATION_CLASSES = 6 # 0 to 5
 
@@ -192,16 +192,14 @@ def main():
     train_cnn = TrainCNN()
 
     # train model for plate reading
-    #data = train_cnn.prep_data(PLATE_DATA, plate = True)
-    #train_cnn.train_nn(PLATE_CLASSES, PLATE_SAVE_FILE, data)
+    data = train_cnn.prep_data(PLATE_DATA, plate = True)
+    train_cnn.train_nn(PLATE_CLASSES, PLATE_SAVE_FILE, data)
 
     # train model for location reading
-    data = train_cnn.prep_data(LOCATION_DATA, plate = False) 
-    train_cnn.train_nn(LOCATION_CLASSES, LOCATION_SAVE_FILE, data)
+    #data = train_cnn.prep_data(LOCATION_DATA, plate = False) 
+    #train_cnn.train_nn(LOCATION_CLASSES, LOCATION_SAVE_FILE, data)
 
 
 
 if __name__ == "__main__":    
     main() 
-
-    

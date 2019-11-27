@@ -21,7 +21,7 @@ from keras import backend
 import random
 
 # define constants
-PLATE_LOAD_FILE = 'Plate_Reader5.h5'
+PLATE_LOAD_FILE = 'Plate_Reader2.h5'
 LOCATION_LOAD_FILE = 'Location_Reader2.h5'
 
 
@@ -55,6 +55,8 @@ class ReadInfo:
             else:
                 if prediction[i] > 9:
                     result.append(self.num_to_char(prediction[i]))
+                else:
+                    result.append(prediction[i])
                 pre = False
 
         if pre != True:
