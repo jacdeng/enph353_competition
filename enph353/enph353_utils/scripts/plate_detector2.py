@@ -13,7 +13,7 @@ from std_msgs.msg import String
 # also does the publishing to rosnode, interacts with read_info
 
 TOP_TO_EXCLUDE = 0.14
-BOT_TO_INCLUDE = 0.09
+BOT_TO_INCLUDE = 0.07
 
 TEAM_ID = str("teamRocket")
 TEAM_PASSWORD = str("mountainDew")
@@ -22,11 +22,12 @@ class DetectPlate:
 
     def __init__(self):
         self.info_pub = rospy.Publisher('/license_plate', String, queue_size=1)
+        self.info_pub.publish(TEAM_ID+","+TEAM_PASSWORD+"0,XX00")
         self.reader = read_info.ReadInfo()
         self.spot_num = None
         self.license_plate = None
-        self.spot_num_str = ""
-        self.license_plate_str = ""
+        self.spot_num_list = []
+        self.license_plate_list = []
 
     # find the very specific blue color
     # not using this anymore
@@ -47,39 +48,58 @@ class DetectPlate:
 
     # uses red_info and gets the strings
     def get_info(self):
+        pred1 = pred2 = False
         if self.spot_num is not None and self.license_plate is not None:
-            pred, self.license_plate_str = self.reader.run_plate_prediction(self.license_plate)
-            # if pred:
-            self.spot_num_str = self.reader.run_location_prediction(self.spot_num)
-            # else:
-            #     self.license_plate_str = None
-        
+            pred1, self.license_plate_list = self.reader.run_plate_prediction(self.license_plate)
+            if pred1:
+                pred2, self.spot_num_list = self.reader.run_location_prediction(self.spot_num)
+
         print("+++++++++++++++++++++++++++++")
-        print(self.spot_num_str)
-        print(self.license_plate_str)
+        print(self.spot_num_list)
+        print(self.license_plate_list)
         print("+++++++++++++++++++++++++++++")
 
-        return self.spot_num_str, self.license_plate_str
+        if not pred1:
+            self.license_plate_list = []
+
+        if not pred2:
+            self.spot_num_list = []
+
+        return self.spot_num_list, self.license_plate_list
 
     # reset self.spot_num and self.license_plate
     def reset_spot_and_license(self):
         self.spot_num = None
         self.license_plate = None
-        self.spot_num_str = ""
-        self.license_plate_str = ""
+        self.spot_num_list = []
+        self.license_plate_list = []
 
     # publish to node
     def publish(self):
+        print("trying to publishing")
         str_to_pub = ""
         if self.spot_num is not None and self.license_plate is not None:
-            if self.spot_num_str is not "" and self.license_plate_str is not "":
-                str_to_pub = TEAM_ID+TEAM_PASSWORD+self.spot_num_str+self.license_plate_str
+            if self.spot_num_list is not [] and self.license_plate_list is not []:
+                str_to_pub1 = TEAM_ID+","+TEAM_PASSWORD + ","
+
+                str_to_pub2 = ""
+                for i in self.spot_num_list:
+                    str_to_pub2 = str_to_pub2 + str(i)
+                
+                str_to_pub3 = ""
+                for j in range(len(self.license_plate_list)):
+                    if j == 0 or j == 1:
+                        str_to_pub3 = str_to_pub3 + str(self.license_plate_list[j])
+                    if j == 2 or j == 3:
+                        str_split = list(str(self.license_plate_list[j]))
+                        str_to_pub3 = str_to_pub3 + str(str_split[1])
         
-        if str_to_pub is not "":
-            print("+++++++++++++++++++++++++++++")
-            print(str_to_pub)
-            print("+++++++++++++++++++++++++++++")
-            self.info_pub.publish(str_to_pub)
+                str_to_pub = str_to_pub1 + str_to_pub2 + "," + str_to_pub3
+
+                print("+++++++++++++++++++++++++++++")
+                print(str_to_pub)
+                print("+++++++++++++++++++++++++++++")
+                self.info_pub.publish(str_to_pub)
 
 
     # finds the plate and spot num from the given frame

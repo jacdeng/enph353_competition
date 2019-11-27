@@ -37,7 +37,7 @@ class LineFollower:
         # running state (does not check for crossing)
         self.running = False
         self.do_not_scan = False
-        self.slice_amt = 30
+        self.slice_amt = 40
 
         # scanning state
         self.scanning = False
@@ -49,11 +49,11 @@ class LineFollower:
     def move_set(self, action):
         if action == "crawl forward cnn":
             self.move("F")
-            rospy.sleep(0.7)
+            rospy.sleep(0.3)
             self.move("stop")
         if action == "crawl forward crosswalk":
             self.move("F")
-            rospy.sleep(0.1)
+            rospy.sleep(0.2)
             self.move("stop")
 
     def move(self, action):
@@ -65,10 +65,10 @@ class LineFollower:
             vel_cmd.angular.z = 0.0
         elif action == "L": 
             vel_cmd.linear.x = 0.0
-            vel_cmd.angular.z = 0.1
+            vel_cmd.angular.z = 0.05
         elif action == "R": 
             vel_cmd.linear.x = 0.0
-            vel_cmd.angular.z = -0.1
+            vel_cmd.angular.z = -0.05
         elif action == "stop":
             vel_cmd.linear.x = 0
             vel_cmd.linear.y = 0
@@ -84,13 +84,19 @@ class LineFollower:
 
         plates_found = False
         # refer to plate_detector2. check frame for potential license plates
-        if self.frame_count_checker > 4:
+        if self.frame_count_checker > 10 and not (self.scanning):
             plates_found = self.plate_detector.check_frame(self.frame)
             self.frame_count_checker = 0
             if plates_found:
                 self.move_set("crawl forward cnn")
-                # spot_str, license_str = self.plate_detector.get_info()
-                # self.plate_detector.publish()
+                spot_list = []
+                license_list = []
+                spot_list, license_list = self.plate_detector.get_info()
+                if len(spot_list) != 0 and len(license_list) != 0:
+                    self.plate_detector.publish()
+                    pass
+                else:
+                    print("confidence low. not publishing")
         self.frame_count_checker = self.frame_count_checker+1
 
         # converting image into black and white from gray
@@ -158,10 +164,10 @@ class LineFollower:
             if abs(diff) < 550000  :
 
                 # wait till a huge change happens then start checking for clears so our car can go
-                if abs(diff) > 10000 and (self.first_approach):
+                if abs(diff) > 11000 and (self.first_approach):
                     print "diff over 10000"
                     self.wait_counter = self.wait_counter + 1
-                    if(self.wait_counter > 5):
+                    if(self.wait_counter > 6):
                         print("guy started crossing, first_approach=false")
                         self.first_approach = False
                         self.wait_counter = 0
@@ -172,10 +178,10 @@ class LineFollower:
                         self.wait_counter = 0
                 
                 # wait till a sequence of small change happens meaning we have a clear, then we go
-                if abs(diff) < 10000 and not (self.first_approach):
+                if abs(diff) < 6000 and not (self.first_approach):
                     print("clear")
                     self.go_counter = self.go_counter + 1
-                    if(self.go_counter > 3):
+                    if(self.go_counter > 4):
                         print("===================")
                         self.first_approach = True
                         self.go_counter = 0
@@ -213,9 +219,10 @@ class LineFollower:
 
     def has_white_at_right(self,bw,h,w):
 
-        # draw a small square in the top_right of the screen, if it is white, we start stop the left turn and start to line follow
+        # draw a small square in the right of the screen, if it is white, we start stop the left turn and start to line follow
         check_h = 6*h/8
-        check_w = 6*w/8-30
+        check_w = 6*w/8-113
+        
         check_range = 7
         check = bw[check_h-check_range:check_h+check_range , check_w-check_range:check_w+check_range]
         cv2.rectangle(self.frame, ( check_w-check_range , check_h-check_range ), ( check_w+check_range , check_h+check_range), (0,255,0), 2)
@@ -262,9 +269,9 @@ class LineFollower:
         return np.sum(check)
 
     def follow(self, state):
-        if state < 20:
+        if state < 31:
             self.move("L")
-        elif state > 28:
+        elif state > 35:
             self.move("R")
         else:
             self.move("F")

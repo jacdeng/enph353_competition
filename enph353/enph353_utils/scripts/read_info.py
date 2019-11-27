@@ -25,7 +25,7 @@ PLATE_NUM_LOAD_FILE = 'Plate_num.h5'
 PLATE_LET_LOAD_FILE = 'Plate_let.h5'
 LOCATION_NUM_LOAD_FILE = 'Location_num.h5'
 
-CONFIDENCE_THRESHOLD = 65  # percent confidence
+CONFIDENCE_THRESHOLD = 73  # percent confidence
 
 
 class ReadInfo:
@@ -35,28 +35,33 @@ class ReadInfo:
     # predict license plate
     def run_plate_prediction(self, cv_image):
         prediction = []
-        #print("trying to load cnn")
 
+        print("trying to load the 2 plate cnn")
         num_model = models.load_model(PLATE_NUM_LOAD_FILE)
         let_model = models.load_model(PLATE_LET_LOAD_FILE)
-
-        #print("loaded cnn")
+        print("loaded the 2 plate cnn")
 
         num1_data, num2_data, let1_data, let2_data = self.crop_plate(cv_image)
         num1_data = np.array(num1_data)/255.0
         num2_data = np.array(num2_data)/255.0
         let1_data = np.array(let1_data)/255.0
         let2_data = np.array(let2_data)/255.0
+
+        print("loading prediction on the 2 plate cnn")
         
         prediction.append(str(self.num_to_char(let_model.predict_classes(let1_data))))
         prediction.append(str(self.num_to_char(let_model.predict_classes(let2_data))))
         prediction.append(str(num_model.predict_classes(num1_data)))
         prediction.append(str(num_model.predict_classes(num2_data)))
 
+        print("predicted the 2 plate cnn, loading confidence level")
+
         confidence1 = round(np.amax(let_model.predict(let1_data)) * 100, 2)
         confidence2 = round(np.amax(let_model.predict(let2_data)) * 100, 2)
         confidence3 = round(np.amax(num_model.predict(num1_data)) * 100, 2)
         confidence4 = round(np.amax(num_model.predict(num1_data)) * 100, 2)
+
+        print("confidence level loaded for the 2 plate cnn")
 
         min_confidence = min(confidence1, confidence2, confidence3, confidence4)
 
@@ -67,18 +72,22 @@ class ReadInfo:
 
         print('confidence values of prediction: ' + str(confidence1) + ', ' + str(confidence2) + ', ' + str(confidence3) + ', ' + str(confidence4))
         
-        return pre, str(prediction)
+        return pre, prediction
 
 
     # predict location number
     def run_location_prediction(self, cv_image):
+
+        print("trying to load the spot num cnn")
         model = models.load_model(LOCATION_NUM_LOAD_FILE)
+        print("spot num cnn loaded")
 
         X = self.crop_location(cv_image)
         X = np.array(X)/255.0
         
+        print("prediting spot num")
         prediction = model.predict_classes(X)
-
+        print("spot num predicting, loading confidence")
         confidence = round(np.amax(model.predict(X)) * 100, 2)
         print ('The confidence of this prediction is: ' + str(confidence))
 
@@ -87,11 +96,13 @@ class ReadInfo:
         else:
             pre = False
         
-        return pre, (str(prediction + 1))
+        return pre, (prediction + 1)
 
 
     # crops plate number 4 individual characters and converts it to an array
     def crop_plate(self, cv_image):
+        print("beginning crop plate")
+
         OFFSET = 50
         LETTER_WIDTH = 100 
         right = OFFSET
@@ -104,8 +115,8 @@ class ReadInfo:
 
         resized = cv.resize(cv_image, PLATE_SIZE, interpolation = cv.INTER_AREA)
 
-        cv.imshow('resized', resized)
-        cv.waitKey(0)
+        # cv.imshow('resized', resized)
+        # cv.waitKey(0)
         
         for i in range (4):
             if i == 2: 
@@ -119,8 +130,8 @@ class ReadInfo:
 
             img = np.array(img)
 
-            cv.imshow('cropped', img)
-            cv.waitKey(0)
+            # cv.imshow('cropped', img)
+            # cv.waitKey(0)
 
             if i == 0:
                 let1_data.append(img)
@@ -130,12 +141,16 @@ class ReadInfo:
                 num1_data.append(img)
             else:
                 num2_data.append(img)
+        
+        print("crop plate finish")
 
         return num1_data, num2_data, let1_data, let2_data
 
     
     # crops location into an image of the number and converts it to an array 
     def crop_location(self, cv_image):
+        print("beginning crop location")
+
         DIM = 256, 128
         X = []
 
@@ -146,11 +161,12 @@ class ReadInfo:
 
         X.append(img)
 
-        cv.imshow('resized', resized)
-        cv.waitKey(0)
-        cv.imshow('cropped', crop)
-        cv.waitKey(0)
+        # cv.imshow('resized', resized)
+        # cv.waitKey(0)
+        # cv.imshow('cropped', crop)
+        # cv.waitKey(0)
 
+        print("location crop finish")
         return X
 
 
