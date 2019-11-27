@@ -5,23 +5,28 @@ import sys
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 import random
-import location_reader
-import plate_reader
+import read_info
 from std_msgs.msg import String
 
 # INTERFACE FOR PLATE_DETECTOR1 AND THE CNN FOR LINE_FOLLOWER2.PY
 # refactored to work as subsidiary to line_follower2.py
-# also does the publishing to rosnode, interacts with location_reader and plate_reader.
+# also does the publishing to rosnode, interacts with read_info
 
-TOP_TO_EXCLUDE = 0.15
+TOP_TO_EXCLUDE = 0.14
 BOT_TO_INCLUDE = 0.09
+
+TEAM_ID = str("teamRocket")
+TEAM_PASSWORD = str("mountainDew")
 
 class DetectPlate:
 
     def __init__(self):
         self.info_pub = rospy.Publisher('/license_plate', String, queue_size=1)
+        self.reader = read_info.ReadInfo()
         self.spot_num = None
         self.license_plate = None
+        self.spot_num_str = ""
+        self.license_plate_str = ""
 
     # find the very specific blue color
     # not using this anymore
@@ -39,6 +44,43 @@ class DetectPlate:
         mask = cv.inRange(hsv, lower, upper)
         res = cv.bitwise_and(frame,frame, mask= mask)
         return res
+
+    # uses red_info and gets the strings
+    def get_info(self):
+        if self.spot_num is not None and self.license_plate is not None:
+            pred, self.license_plate_str = self.reader.run_plate_prediction(self.license_plate)
+            # if pred:
+            self.spot_num_str = self.reader.run_location_prediction(self.spot_num)
+            # else:
+            #     self.license_plate_str = None
+        
+        print("+++++++++++++++++++++++++++++")
+        print(self.spot_num_str)
+        print(self.license_plate_str)
+        print("+++++++++++++++++++++++++++++")
+
+        return self.spot_num_str, self.license_plate_str
+
+    # reset self.spot_num and self.license_plate
+    def reset_spot_and_license(self):
+        self.spot_num = None
+        self.license_plate = None
+        self.spot_num_str = ""
+        self.license_plate_str = ""
+
+    # publish to node
+    def publish(self):
+        str_to_pub = ""
+        if self.spot_num is not None and self.license_plate is not None:
+            if self.spot_num_str is not "" and self.license_plate_str is not "":
+                str_to_pub = TEAM_ID+TEAM_PASSWORD+self.spot_num_str+self.license_plate_str
+        
+        if str_to_pub is not "":
+            print("+++++++++++++++++++++++++++++")
+            print(str_to_pub)
+            print("+++++++++++++++++++++++++++++")
+            self.info_pub.publish(str_to_pub)
+
 
     # finds the plate and spot num from the given frame
     # returns true if found a plate and spotnum, else returns false
@@ -60,7 +102,7 @@ class DetectPlate:
             #find contour with the biggest area
             max_center = max(contours, key=cv.contourArea)
             #frame = cv.circle(frame, (int(max_center[0][0][0]),int(max_center[0][0][1])), 5, (0, 0, 255) , -1)
-            cv.drawContours(frame, max_center, -1, (0,255,0), 2)
+            #cv.drawContours(frame, max_center, -1, (0,255,0), 2)
 
             x, y, w, h = cv.boundingRect(max_center)
             #cv.circle(frame, (int(x),int(y)), 5, (0,0,255),1)
@@ -87,14 +129,14 @@ class DetectPlate:
                     flag = True
                     # uncomment cv.imwrite to save the read files to folder
 
-                    cv.imshow('plate_number', license_plate)
-                    cv.waitKey(2)
-                    #cv.imwrite('./new_plates/' + str(random.randint(0,999)) + '.png', license_plate)
+                    # cv.imshow('plate_number', license_plate)
+                    # cv.waitKey(2)
+                    cv.imwrite('./new_plates/' + str(random.randint(0,999)) + '.png', license_plate)
                     self.license_plate = license_plate
                 
-                    cv.imshow('spot number', spot_num)
-                    cv.waitKey(2)
-                    #cv.imwrite('./new_location/' + str(random.randint(0,999)) + '.png', spot_num)
+                    # cv.imshow('spot number', spot_num)
+                    # cv.waitKey(2)
+                    cv.imwrite('./new_location/' + str(random.randint(0,999)) + '.png', spot_num)
                     self.spot_num = spot_num
 
                 #save license plate
