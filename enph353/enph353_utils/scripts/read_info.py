@@ -25,6 +25,8 @@ PLATE_NUM_LOAD_FILE = 'Plate_num.h5'
 PLATE_LET_LOAD_FILE = 'Plate_let.h5'
 LOCATION_NUM_LOAD_FILE = 'Location_num.h5'
 
+CONFIDENCE_THRESHOLD = 65  # percent confidence
+
 
 class ReadInfo:
     def __init__(self):
@@ -40,21 +42,33 @@ class ReadInfo:
 
         #print("loaded cnn")
 
-        num_data, let_data = self.crop_plate(cv_image)
-        num_data = np.array(num_data)/255.0
-        let_data = np.array(let_data)/255.0
+        num1_data, num2_data, let1_data, let2_data = self.crop_plate(cv_image)
+        num1_data = np.array(num1_data)/255.0
+        num2_data = np.array(num2_data)/255.0
+        let1_data = np.array(let1_data)/255.0
+        let2_data = np.array(let2_data)/255.0
         
-        let_prediction = let_model.predict_classes(let_data)
-        num_prediction = num_model.predict_classes(num_data)
+        prediction.append(str(self.num_to_char(let_model.predict_classes(let1_data))))
+        prediction.append(str(self.num_to_char(let_model.predict_classes(let2_data))))
+        prediction.append(str(num_model.predict_classes(num1_data)))
+        prediction.append(str(num_model.predict_classes(num2_data)))
 
-        for i in range(2):
-            prediction.append(self.num_to_char(let_prediction[i]))
-        for i in range(2):
-            prediction.append(num_prediction[i])
+        confidence1 = round(np.amax(let_model.predict(let1_data)) * 100, 2)
+        confidence2 = round(np.amax(let_model.predict(let2_data)) * 100, 2)
+        confidence3 = round(np.amax(num_model.predict(num1_data)) * 100, 2)
+        confidence4 = round(np.amax(num_model.predict(num1_data)) * 100, 2)
 
-        #print("predicted")
+        min_confidence = min(confidence1, confidence2, confidence3, confidence4)
 
-        return str(prediction)
+        if min_confidence >= CONFIDENCE_THRESHOLD:
+            pre = True
+        else:
+            pre = False
+
+        print('confidence values of prediction: ' + str(confidence1) + ', ' + str(confidence2) + ', ' + str(confidence3) + ', ' + str(confidence4))
+        
+        return pre, str(prediction)
+
 
     # predict location number
     def run_location_prediction(self, cv_image):
@@ -64,8 +78,16 @@ class ReadInfo:
         X = np.array(X)/255.0
         
         prediction = model.predict_classes(X)
+
+        confidence = round(np.amax(model.predict(X)) * 100, 2)
+        print ('The confidence of this prediction is: ' + str(confidence))
+
+        if confidence >= CONFIDENCE_THRESHOLD:
+            pre = True
+        else:
+            pre = False
         
-        return (str(prediction + 1))
+        return pre, (str(prediction + 1))
 
 
     # crops plate number 4 individual characters and converts it to an array
@@ -75,13 +97,15 @@ class ReadInfo:
         right = OFFSET
         DIM = 128, 128
         PLATE_SIZE = 600, 298
-        num_data = []
-        let_data = []
+        num1_data = []
+        num2_data = []
+        let1_data = []
+        let2_data = []
 
         resized = cv.resize(cv_image, PLATE_SIZE, interpolation = cv.INTER_AREA)
 
-        cv.imshow('resized', resized)
-        cv.waitKey(0)
+        # cv.imshow('resized', resized)
+        # cv.waitKey(0)
         
         for i in range (4):
             if i == 2: 
@@ -98,12 +122,16 @@ class ReadInfo:
             # cv.imshow('cropped', img)
             # cv.waitKey(0)
 
-            if i < 2:
-                let_data.append(img)
+            if i == 0:
+                let1_data.append(img)
+            elif i == 2:
+                let2_data.append(img)
+            elif i == 3:
+                num1_data.append(img)
             else:
-                num_data.append(img)
+                num2_data.append(img)
 
-        return num_data, let_data
+        return num1_data, num2_data, let1_data, let2_data
 
     
     # crops location into an image of the number and converts it to an array 
@@ -118,8 +146,8 @@ class ReadInfo:
 
         X.append(img)
 
-        cv.imshow('resized', resized)
-        cv.waitKey(0)
+        # cv.imshow('resized', resized)
+        # cv.waitKey(0)
         # cv.imshow('cropped', crop)
         # cv.waitKey(0)
 
@@ -141,14 +169,17 @@ def main():
     read_info = ReadInfo()
 
     # predict new location
-    location = cv.imread('/home/fizzer/enph353_cnn_lab/testdata/pictures411.png')
-    location_result = read_info.run_location_prediction(location)
+    location = cv.imread('/home/fizzer/enph353_cnn_lab/testdata/pictures880.png')
+    pre,location_result = read_info.run_location_prediction(location)
     print('prediction: P' + location_result)
+    print('prediction is probably ' + str(pre))
+
 
     # predict new license plate
-    plate = cv.imread('/home/fizzer/enph353_cnn_lab/testdata/pictures362.png')
-    plate_result = read_info.run_plate_prediction(plate)
+    plate = cv.imread('/home/fizzer/enph353_cnn_lab/testdata/pictures583.png')
+    pre,plate_result = read_info.run_plate_prediction(plate)
     print('prediction: ' + plate_result)
+    print('prediction is probably ' + str(pre))
 
 
 
