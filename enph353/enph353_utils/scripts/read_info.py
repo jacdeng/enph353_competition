@@ -26,7 +26,7 @@ PLATE_LET_LOAD_FILE = 'Plate_let3.h5'
 LOCATION_NUM_LOAD_FILE = 'Location_num2.h5'
 
 CONFIDENCE_THRESHOLD = 73  # percent confidence
-
+CONFIDENCE_THRESHOLD2 = 50
 
 class ReadInfo:
     def __init__(self):
@@ -91,7 +91,7 @@ class ReadInfo:
         confidence = round(np.amax(model.predict(X)) * 100, 2)
         print ('The confidence of this prediction is: ' + str(confidence))
 
-        if confidence >= CONFIDENCE_THRESHOLD:
+        if confidence >= CONFIDENCE_THRESHOLD2:
             pre = True
         else:
             pre = False

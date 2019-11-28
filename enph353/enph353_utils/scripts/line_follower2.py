@@ -53,7 +53,7 @@ class LineFollower:
             self.move("stop")
         if action == "crawl forward crosswalk":
             self.move("F")
-            rospy.sleep(0.2)
+            rospy.sleep(0.3)
             self.move("stop")
 
     def move(self, action):
@@ -84,7 +84,7 @@ class LineFollower:
 
         plates_found = False
         # refer to plate_detector2. check frame for potential license plates
-        if self.frame_count_checker > 10 and not (self.scanning):
+        if self.frame_count_checker > 6 and not (self.scanning):
             plates_found = self.plate_detector.check_frame(self.frame)
             self.frame_count_checker = 0
             if plates_found:

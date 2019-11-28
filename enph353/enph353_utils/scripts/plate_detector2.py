@@ -144,20 +144,20 @@ class DetectPlate:
                 #cv.rectangle(frame, (x,y+y_QR), (x+w,y+h), (255,0,0))
                 spot_num = frame[y+y_QR:y+h, x:x+w]
 
-                if self.is_valid_plate(license_plate) and self.is_valid_spot(spot_num):
+                # if self.is_valid_plate(license_plate) and self.is_valid_spot(spot_num):
                     
-                    flag = True
-                    # uncomment cv.imwrite to save the read files to folder
+                flag = True
+                # uncomment cv.imwrite to save the read files to folder
 
-                    # cv.imshow('plate_number', license_plate)
-                    # cv.waitKey(2)
-                    cv.imwrite('./new_plates/' + str(random.randint(0,999)) + '.png', license_plate)
-                    self.license_plate = license_plate
-                
-                    # cv.imshow('spot number', spot_num)
-                    # cv.waitKey(2)
-                    cv.imwrite('./new_location/' + str(random.randint(0,999)) + '.png', spot_num)
-                    self.spot_num = spot_num
+                # cv.imshow('plate_number', license_plate)
+                # cv.waitKey(2)
+                cv.imwrite('./new_plates/' + str(random.randint(0,999)) + '.png', license_plate)
+                self.license_plate = license_plate
+            
+                # cv.imshow('spot number', spot_num)
+                # cv.waitKey(2)
+                cv.imwrite('./new_location/' + str(random.randint(0,999)) + '.png', spot_num)
+                self.spot_num = spot_num
 
                 #save license plate
         
@@ -167,19 +167,21 @@ class DetectPlate:
         ar = license_plate.shape[0]/license_plate.shape[1]
         gray = cv.cvtColor(license_plate, cv.COLOR_BGR2GRAY)
         bw = cv.threshold(gray, 225, 255, cv.THRESH_BINARY)[1]
-        if np.sum(bw) > 0 and ar<0.2:
-            return False
-        else:
-            return True
+        return True
+        # if np.sum(bw) > 0 and ar<0.2:
+        #     return False
+        # else:
+        #     return True
     
     def is_valid_spot(self, spot_num):
         ar = spot_num.shape[0]/spot_num.shape[1]
         gray = cv.cvtColor(spot_num, cv.COLOR_BGR2GRAY)
         bw = cv.threshold(gray, 225, 255, cv.THRESH_BINARY)[1]
-        if np.sum(bw) > 0 and ar<0.5:
-            return False
-        else:
-            return True
+        return True
+        # if np.sum(bw) > 0 and ar<0.5:
+        #     return False
+        # else:
+        #     return True
 
     def has_blue(self, blue):
         h = blue.shape[0]
@@ -212,12 +214,12 @@ class DetectPlate:
         x, y, w, h = cv.boundingRect(center)
 
         x_on_left = x<int(img.shape[1]/2)
-        width = w > 40 and w < 210
-        height = h > 40 and h < 210
-        area = cv.contourArea(center) > 6000
+        width = w > 30 and w < 220
+        height = h > 30 and h < 220
+        area = cv.contourArea(center) > 5500
         aspect_ratio = False
 
-        if float(h) / w < 1 and 0.5 < float(h) / w:
+        if float(h) / w < 1:
             aspect_ratio = True
 
         on_page_req = x > 0
