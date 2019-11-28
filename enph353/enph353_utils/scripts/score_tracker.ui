@@ -20,43 +20,57 @@
   <widget class="QPushButton" name="penalty_vehicle_QPB">
    <property name="geometry">
     <rect>
-     <x>60</x>
-     <y>530</y>
-     <width>111</width>
-     <height>51</height>
+     <x>28</x>
+     <y>384</y>
+     <width>31</width>
+     <height>30</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+     <stylestrategy>PreferDefault</stylestrategy>
+    </font>
+   </property>
    <property name="text">
-    <string>&amp;Vehicle
-Collision</string>
+    <string>&amp;V</string>
    </property>
   </widget>
   <widget class="QPushButton" name="penalty_pedestrian_QPB">
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>530</y>
-     <width>111</width>
-     <height>51</height>
+     <x>28</x>
+     <y>414</y>
+     <width>31</width>
+     <height>30</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+    </font>
+   </property>
    <property name="text">
-    <string>&amp;Pedestrian
-Collision</string>
+    <string>&amp;P</string>
    </property>
   </widget>
   <widget class="QPushButton" name="penalty_track_QPB">
    <property name="geometry">
     <rect>
-     <x>300</x>
-     <y>530</y>
-     <width>111</width>
-     <height>51</height>
+     <x>28</x>
+     <y>444</y>
+     <width>31</width>
+     <height>30</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+     <stylestrategy>PreferDefault</stylestrategy>
+    </font>
+   </property>
    <property name="text">
-    <string>&amp;Track
-Limits</string>
+    <string>&amp;T</string>
    </property>
   </widget>
   <widget class="QTableWidget" name="license_scores_QTW">
@@ -68,6 +82,12 @@ Limits</string>
      <height>271</height>
     </rect>
    </property>
+   <attribute name="horizontalHeaderMinimumSectionSize">
+    <number>35</number>
+   </attribute>
+   <attribute name="verticalHeaderMinimumSectionSize">
+    <number>21</number>
+   </attribute>
    <row>
     <property name="text">
      <string/>
@@ -111,6 +131,11 @@ Limits</string>
    <column>
     <property name="text">
      <string>Location</string>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
     </property>
    </column>
    <column>
@@ -292,12 +317,15 @@ Limits</string>
   <widget class="QTableWidget" name="penalties_scores_QTW">
    <property name="geometry">
     <rect>
-     <x>30</x>
+     <x>60</x>
      <y>360</y>
-     <width>411</width>
-     <height>121</height>
+     <width>371</width>
+     <height>115</height>
     </rect>
    </property>
+   <attribute name="horizontalHeaderDefaultSectionSize">
+    <number>90</number>
+   </attribute>
    <row>
     <property name="text">
      <string/>
@@ -375,7 +403,7 @@ Limits</string>
    </item>
    <item row="2" column="0">
     <property name="text">
-     <string>Track</string>
+     <string>Track Limits</string>
     </property>
    </item>
    <item row="2" column="1">
@@ -568,6 +596,12 @@ p, li { white-space: pre-wrap; }
      <height>51</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <stylestrategy>PreferDefault</stylestrategy>
+    </font>
+   </property>
    <property name="text">
     <string>&amp;Start
 Time</string>
@@ -586,7 +620,7 @@ Time</string>
     <string>000 sec</string>
    </property>
   </widget>
-  <widget class="QLabel" name="elapsed_time_value_QL_2">
+  <widget class="QLabel" name="elapsed_time_label_QL">
    <property name="geometry">
     <rect>
      <x>590</x>
@@ -613,6 +647,51 @@ Time</string>
    </property>
    <property name="text">
     <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="lap_completed_QPB">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>530</y>
+     <width>101</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
+     <stylestrategy>PreferDefault</stylestrategy>
+    </font>
+   </property>
+   <property name="text">
+    <string>One &amp;Lap
+Completed</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="manual_control_QPB">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>530</y>
+     <width>101</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <stylestrategy>PreferDefault</stylestrategy>
+    </font>
+   </property>
+   <property name="text">
+    <string>&amp;Manual
+Control</string>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>
