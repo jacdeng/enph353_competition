@@ -159,7 +159,9 @@ class DetectPlate:
                 cv.imwrite('./new_location/' + str(random.randint(0,999)) + '.png', spot_num)
                 self.spot_num = spot_num
 
-                #save license plate
+                # cv.imshow("debug", tt)
+                # cv.waitKey(2)
+                # #save license plate
         
         return flag
 
@@ -216,7 +218,7 @@ class DetectPlate:
         x_on_left = x<int(img.shape[1]/2)
         width = w > 30 and w < 220
         height = h > 30 and h < 220
-        area = cv.contourArea(center) > 5500
+        area = cv.contourArea(center) > 5000
         aspect_ratio = False
 
         if float(h) / w < 1:

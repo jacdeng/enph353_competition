@@ -46,6 +46,7 @@ class LineFollower:
         self.wait_counter = 0
         self.first_approach = True
 
+
     def move_set(self, action):
         if action == "crawl forward cnn":
             self.move("F")
@@ -84,7 +85,7 @@ class LineFollower:
 
         plates_found = False
         # refer to plate_detector2. check frame for potential license plates
-        if self.frame_count_checker > 6 and not (self.scanning):
+        if self.frame_count_checker > 5 and not (self.scanning):
             plates_found = self.plate_detector.check_frame(self.frame)
             self.frame_count_checker = 0
             if plates_found:
